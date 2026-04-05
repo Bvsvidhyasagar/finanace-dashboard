@@ -6,6 +6,9 @@ const Transactions = ({ role }) => {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
 
+  const [sortBy, setSortBy] = useState("date");
+  const [sortOrder, setSortOrder] = useState("desc");
+
   const [transactions, setTransactions] = useState([
     { id: 1, date: "2026-04-01", amount: 5000, category: "Salary", type: "income" },
     { id: 2, date: "2026-04-02", amount: 200, category: "Food", type: "expense" },
@@ -15,7 +18,6 @@ const Transactions = ({ role }) => {
 
   const [showModal, setShowModal] = useState(false);
 
-  // Add Transaction Handler
   const handleAddTransaction = (newTxn) => {
     setTransactions([
       ...transactions,
@@ -24,23 +26,33 @@ const Transactions = ({ role }) => {
     setShowModal(false);
   };
 
-  // Filter Logic
-  const filteredTransactions = transactions.filter((txn) => {
-    const matchesSearch = txn.category
-      .toLowerCase()
-      .includes(search.toLowerCase());
+  const filteredTransactions = transactions
+    .filter((txn) => {
+      const matchesSearch = txn.category
+        .toLowerCase()
+        .includes(search.toLowerCase());
 
-    const matchesFilter =
-      filter === "all" || txn.type === filter;
+      const matchesFilter =
+        filter === "all" || txn.type === filter;
 
-    return matchesSearch && matchesFilter;
-  });
+      return matchesSearch && matchesFilter;
+    })
+    .sort((a, b) => {
+      if (sortBy === "amount") {
+        return sortOrder === "asc"
+          ? a.amount - b.amount
+          : b.amount - a.amount;
+      } else {
+        return sortOrder === "asc"
+          ? new Date(a.date) - new Date(b.date)
+          : new Date(b.date) - new Date(a.date);
+      }
+    });
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Transactions</h1>
 
-      {/* Admin Button */}
       {role === "admin" && (
         <button
           onClick={() => setShowModal(true)}
@@ -50,22 +62,38 @@ const Transactions = ({ role }) => {
         </button>
       )}
 
-      {/* Controls */}
-      <div className="flex gap-4 mb-4">
+      <div className="flex gap-4 mb-4 flex-wrap">
         <SearchBar search={search} setSearch={setSearch} />
         <FilterBar filter={filter} setFilter={setFilter} />
+
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="date">Sort by Date</option>
+          <option value="amount">Sort by Amount</option>
+        </select>
+
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="desc">Descending</option>
+          <option value="asc">Ascending</option>
+        </select>
       </div>
 
-      {/* Table */}
       <div className="bg-white p-5 rounded-xl shadow overflow-x-auto">
         <table className="w-full text-left">
           
           <thead>
             <tr className="border-b">
-              <th className="py-2">Date</th>
-              <th className="py-2">Category</th>
-              <th className="py-2">Type</th>
-              <th className="py-2">Amount</th>
+              <th className="py-2 text-gray-500 text-sm uppercase">Date</th>
+              <th className="py-2 text-gray-500 text-sm uppercase">Category</th>
+              <th className="py-2 text-gray-500 text-sm uppercase">Type</th>
+              <th className="py-2 text-gray-500 text-sm uppercase">Amount</th>
             </tr>
           </thead>
 
@@ -99,7 +127,6 @@ const Transactions = ({ role }) => {
         </table>
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center">
           
@@ -120,25 +147,9 @@ const Transactions = ({ role }) => {
               }}
               className="flex flex-col gap-3"
             >
-              <input
-                name="date"
-                type="date"
-                className="border p-2 rounded"
-                required
-              />
-              <input
-                name="category"
-                placeholder="Category"
-                className="border p-2 rounded"
-                required
-              />
-              <input
-                name="amount"
-                type="number"
-                placeholder="Amount"
-                className="border p-2 rounded"
-                required
-              />
+              <input name="date" type="date" className="border p-2 rounded" required />
+              <input name="category" placeholder="Category" className="border p-2 rounded" required />
+              <input name="amount" type="number" placeholder="Amount" className="border p-2 rounded" required />
 
               <select name="type" className="border p-2 rounded">
                 <option value="income">Income</option>
