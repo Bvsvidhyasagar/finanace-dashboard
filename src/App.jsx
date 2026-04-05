@@ -1,11 +1,14 @@
+import Sidebar from "./components/layouts/Sidebar";
 
 function App() {
-
   return (
-    <h1 className='text-3xl font-bold text-blue-500'>
-      working
-    </h1>
-  )
+    <div className="flex">
+      <Sidebar />
+      <div className="flex-1 p-5">
+        <h1>Main Content</h1>
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;
